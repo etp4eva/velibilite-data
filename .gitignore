@@ -1,0 +1,6 @@
+.venv
+.vscode
+logs
+data/data.db
+output/
+TODO
