@@ -4,3 +4,4 @@ logs
 data/data.db
 output/
 TODO
+data/stations.json

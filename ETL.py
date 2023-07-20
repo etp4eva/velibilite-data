@@ -232,8 +232,8 @@ for idx, stn in enumerate(stnout_json['features']):
             hod: {
                 'green_avg': 0,
                 'blue_avg': 0,
-            } for hod in range(0, 23)
-        } for dow in range(0, 6)
+            } for hod in range(0, 24)
+        } for dow in range(0, 7)
     }
 
     for ind,row in stn_data.iterrows():
@@ -296,12 +296,12 @@ for keys in zone_keys:
                 hod: {
                     'green_avg': 0,
                     'blue_avg': 0,
-                } for hod in range(0, 23)
-            } for dow in range(0, 6)
+                } for hod in range(0, 24)
+            } for dow in range(0, 7)
         }
 
-        for dow in range(0,6):
-            for hod in range(0,23):
+        for dow in range(0,7):
+            for hod in range(0,24):
                 filtered = nhood[(df['day'] == dow) & (df['time_hr'] == hod)]
                 
                 if filtered.empty:
