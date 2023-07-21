@@ -230,8 +230,8 @@ for idx, stn in enumerate(stnout_json['features']):
     stn['properties']['values'] = { 
         dow: {
             hod: {
-                'green_avg': 0,
-                'blue_avg': 0,
+                'g': 0,
+                'b': 0,
             } for hod in range(0, 24)
         } for dow in range(0, 7)
     }
@@ -241,14 +241,14 @@ for idx, stn in enumerate(stnout_json['features']):
         hod = int(row['time_hr'])
 
         stn['properties']['values'][dow][hod] = {
-            'green_avg': row['green_avg'],
-            'blue_avg': row['blue_avg']
+            'g': round(row['green_avg'],2),
+            'b': round(row['blue_avg'],2)
         }
     
     stnout_json['features'][idx] = stn
 
 with open(outstn_path, 'w') as of:
-    json.dump(stnout_json, of)
+    json.dump(stnout_json, of, separators=(',',':'))
 
 zone_query = '''
     SELECT 
@@ -294,8 +294,8 @@ for keys in zone_keys:
         feat['properties']['values'] = { 
             dow: {
                 hod: {
-                    'green_avg': 0,
-                    'blue_avg': 0,
+                    'g': 0,
+                    'b': 0,
                 } for hod in range(0, 24)
             } for dow in range(0, 7)
         }
@@ -306,15 +306,15 @@ for keys in zone_keys:
                 
                 if filtered.empty:
                     feat['properties']['values'][dow][hod] = {
-                        'green_avg': 0,
-                        'blue_avg': 0,
+                        'g': 0,
+                        'b': 0,
                     }
                 else:
                     green_avg, blue_avg = filtered.iloc[0].tolist()[3:]
                     
                     feat['properties']['values'][dow][hod] = {
-                        'green_avg': green_avg,
-                        'blue_avg': blue_avg,
+                        'g': round(green_avg,2),
+                        'b': round(blue_avg,2),
                     }
 
         zone_json['features'][idx] = feat
@@ -324,7 +324,7 @@ for keys in zone_keys:
     ]
 
     with open(out_path, 'w') as of:
-        json.dump(zone_json, of)
+        json.dump(zone_json, of, separators=(',',':'))
 
 c.close()
 con.close()
