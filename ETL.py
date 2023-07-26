@@ -83,7 +83,7 @@ for station in stations_json['data']['stations']:
             'neighbourhood_id': None,
             'arrondissment_id': None,
             'commune_id': None,
-            'base': station
+            'base': station            
         }
         stations_to_update.append(station)
 
@@ -137,6 +137,42 @@ if len(stations_to_update) > 0:
             stations_enriched[station_id]['commune_id'] = None
 
 
+zones_enriched = {
+    'neighbourhood_id': {},
+    'arrondissement_id': {},
+    'commune_id': {},
+}
+for station_id in stations_enriched:
+    capacity = stations_enriched[station_id]['base']['capacity']
+    nhood_id = stations_enriched[station_id]['neighbourhood_id']
+    arrondissment_id = stations_enriched[station_id]['arrondissment_id']
+    commune_id = stations_enriched[station_id]['commune_id']
+
+    if nhood_id is not None: 
+        if nhood_id not in zones_enriched['neighbourhood_id']:
+            zones_enriched['neighbourhood_id'][nhood_id] = {}
+            zones_enriched['neighbourhood_id'][nhood_id]['capacity'] = 0
+
+        zones_enriched['neighbourhood_id'][nhood_id]['capacity'] = zones_enriched['neighbourhood_id'][nhood_id]['capacity'] + capacity
+
+    if arrondissment_id is not None:
+        if arrondissment_id not in zones_enriched['arrondissement_id']:
+            zones_enriched['arrondissement_id'][arrondissment_id] = {}
+            zones_enriched['arrondissement_id'][arrondissment_id]['capacity'] = 0
+
+        zones_enriched['arrondissement_id'][arrondissment_id]['capacity'] = zones_enriched['arrondissement_id'][arrondissment_id]['capacity'] + capacity
+    
+    if commune_id is not None:
+        if commune_id not in zones_enriched['commune_id']:
+            zones_enriched['commune_id'][commune_id] = {}
+            zones_enriched['commune_id'][commune_id]['capacity'] = 0
+
+        zones_enriched['commune_id'][commune_id]['capacity'] = zones_enriched['commune_id'][commune_id]['capacity'] + capacity
+
+    
+
+    
+
 ## Write updated enriched data ##
 
 with open(stations_path, 'w') as jfile:
@@ -182,11 +218,6 @@ for station in newdata_json['data']['stations']:
     se = stations_enriched[station_id]
     total_docks = station['num_bikes_available'] + station['num_docks_available']
 
-    if total_docks != 0:
-        pct_avail = station['num_bikes_available'] / total_docks
-    else:
-        pct_avail = 0
-
     params = (
         station_id, se['neighbourhood_id'], se['arrondissment_id'],
         se['commune_id'], current_dt, current_dt.weekday(), current_dt.hour,
@@ -226,6 +257,8 @@ stnout_json = json.loads(stnout_df.to_json())
 for idx, stn in enumerate(stnout_json['features']):
     stnid = stn['properties']['station_id']
     stn_data = df_station[(df_station['station_id'] == int(stnid))]
+
+    stn['properties']['capacity'] = stations_enriched[stnid]['base']['capacity']
 
     stn['properties']['values'] = { 
         dow: {
@@ -286,6 +319,9 @@ for keys in zone_keys:
     for idx, feat in enumerate(zone_json['features']):
         zid = feat['properties'][zone_key]
         nhood = df[(df[zone_id_key] == int(zid))]
+        
+        if int(zid) in zones_enriched[zone_id_key]:
+            feat['properties']['capacity'] = zones_enriched[zone_id_key][int(zid)]['capacity']
 
         if nhood.empty:
             remove_idx_list.append(idx)
